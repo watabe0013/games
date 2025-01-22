@@ -3,56 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Game Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <title>プチゲーム風レイアウト</title>
     <style>
+        /* 基本スタイル */
         body {
-            background-color: #0d0d0d;
-            color: #0ff;
-            font-family: 'Orbitron', sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* ヘッダー */
+        header {
+            background-color: #ffcc00;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* ナビゲーション */
+        nav {
+            background-color: #ff9900;
+            padding: 10px;
             text-align: center;
         }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        /* コンテナ */
         .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 2px solid #0ff;
-            box-shadow: 0px 0px 20px #0ff;
-            background: rgba(0, 0, 0, 0.8);
-        }
-        h1 {
-            text-shadow: 0px 0px 10px #0ff;
-        }
-        .game-button {
-            display: block;
-            width: 80%;
+            display: flex;
+            max-width: 1200px;
             margin: 20px auto;
-            padding: 15px;
-            font-size: 20px;
-            color: #000;
-            background: linear-gradient(45deg, #0ff, #00f);
-            border: none;
-            cursor: pointer;
-            box-shadow: 0px 0px 10px #0ff;
-            transition: transform 0.2s, box-shadow 0.2s;
+            gap: 20px;
         }
-        .game-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0px 0px 20px #0ff;
+
+        /* メインコンテンツ（ゲーム一覧） */
+        .main-content {
+            flex: 3;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .game-item {
+            background-color: #ffeb99;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .game-item:hover {
+            background-color: #ffcc66;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            flex: 1;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* フッター */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+
+    <!-- ヘッダー -->
+    <header>プチゲーム風レイアウト</header>
+
+    <!-- ナビゲーション -->
+    <nav>
+        <a href="#">ホーム</a>
+        <a href="#">新着ゲーム</a>
+        <a href="#">ランキング</a>
+        <a href="#">カテゴリ</a>
+    </nav>
+
+    <!-- メインコンテナ -->
     <div class="container">
-        <h1>Cyberpunk Game Portal</h1>
-        <button class="game-button" onclick="startGame('game1.html')">ゲーム1をプレイ</button>
-        <button class="game-button" onclick="startGame('game2.html')">ゲーム2をプレイ</button>
-        <button class="game-button" onclick="startGame('game3.html')">ゲーム3をプレイ</button>
+        <!-- メインコンテンツ（ゲーム一覧） -->
+        <div class="main-content">
+            <h2>ゲーム一覧</h2>
+            <div class="game-list">
+                <div class="game-item">ゲーム1</div>
+                <div class="game-item">ゲーム2</div>
+                <div class="game-item">ゲーム3</div>
+                <div class="game-item">ゲーム4</div>
+            </div>
+        </div>
+
+        <!-- サイドバー -->
+        <div class="sidebar">
+            <h3>人気ゲーム</h3>
+            <ul>
+                <li><a href="#">人気ゲーム1</a></li>
+                <li><a href="#">人気ゲーム2</a></li>
+                <li><a href="#">人気ゲーム3</a></li>
+            </ul>
+        </div>
     </div>
-    <script>
-        function startGame(gameUrl) {
-            window.location.href = gameUrl;
-        }
-    </script>
+
+    <!-- フッター -->
+    <footer>
+        © 2025 プチゲーム風サイト - All Rights Reserved.
+    </footer>
+
 </body>
 </html>
