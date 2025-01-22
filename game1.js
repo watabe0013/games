@@ -29,7 +29,7 @@ function initializeBoard() {
     mines.clear();
     revealedCells.clear();
 
-    // 地雷を配置
+    // 地雷を配置（スタート地点には地雷を置かない）
     while (mines.size < mineCount) {
         let r = Math.floor(Math.random() * rows);
         let c = Math.floor(Math.random() * cols);
@@ -39,12 +39,17 @@ function initializeBoard() {
         }
     }
 
+    // スタート地点の周囲に地雷がないようにする
+    if (countMines(startRow, startCol) > 0) {
+        console.log("スタート位置の周囲に地雷があるため、リセット");
+        return initializeBoard(); // 再生成
+    }
+
     // 地雷カウントを計算
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (board[r][c] === "M") continue;
-            let count = countMines(r, c);
-            board[r][c] = count; // 0 も明示的に表示
+            board[r][c] = countMines(r, c);
         }
     }
 
