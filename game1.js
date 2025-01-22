@@ -5,10 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
 const rows = 9;
 const cols = 9;
 const mineCount = 10;
-const startRow = 4; // 5九（0始まりなので4）
-const startCol = 8; // 9列目（0始まりなので8）
-const goalRow = 4; // 5一（0始まりなので4）
-const goalCol = 0; // 1列目（0始まりなので0）
+const startRow = 8; // 一番下（0始まりなので8）
+const startCol = 4; // 真ん中の列（0始まりなので4）
+const goalRow = 0; // 一番上
+const goalCol = 4; // 真ん中の列
 
 let board = [];
 let mines = new Set();
@@ -40,7 +40,8 @@ function initializeBoard() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (board[r][c] === "M") continue;
-            board[r][c] = countMines(r, c);
+            let count = countMines(r, c);
+            board[r][c] = count; // 0 も明示的に表示
         }
     }
 
@@ -92,28 +93,4 @@ function updatePlayerPosition() {
 }
 
 // セルを開く処理
-function handleCellClick(row, col) {
-    if (Math.abs(row - playerPosition.row) > 1 || Math.abs(col - playerPosition.col) > 1) {
-        return;
-    }
-
-    let cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-    cell.classList.add("revealed");
-
-    if (mines.has(`${row},${col}`)) {
-        cell.classList.add("mine");
-        alert("地雷を踏んだ！ゲームオーバー！");
-        initializeBoard();
-        return;
-    } else {
-        cell.textContent = board[row][col] || "";
-    }
-
-    playerPosition = { row, col };
-    updatePlayerPosition();
-
-    if (row === goalRow && col === goalCol) {
-        alert("ゴール！勝利！");
-        initializeBoard();
-    }
-}
+function
