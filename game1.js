@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+    initializeBoard();
+});
+
 const rows = 9;
 const cols = 9;
 const mineCount = 10;
@@ -12,7 +16,13 @@ let playerPosition = { row: startRow, col: startCol };
 
 // ボード初期化
 function initializeBoard() {
+    console.log("ボード初期化開始");
     const gameBoard = document.getElementById("game-board");
+    if (!gameBoard) {
+        console.error("game-board の取得に失敗しました");
+        return;
+    }
+
     gameBoard.innerHTML = "";
     board = Array.from({ length: rows }, () => Array(cols).fill(0));
 
@@ -47,6 +57,7 @@ function initializeBoard() {
     }
 
     updatePlayerPosition();
+    console.log("ボード初期化完了");
 }
 
 // 指定マスの周囲の地雷数を数える
@@ -82,7 +93,6 @@ function updatePlayerPosition() {
 
 // セルを開く処理
 function handleCellClick(row, col) {
-    // 進めるマスだけ選択可能
     if (Math.abs(row - playerPosition.row) > 1 || Math.abs(col - playerPosition.col) > 1) {
         return;
     }
@@ -99,16 +109,11 @@ function handleCellClick(row, col) {
         cell.textContent = board[row][col] || "";
     }
 
-    // プレイヤーの位置を更新
     playerPosition = { row, col };
     updatePlayerPosition();
 
-    // ゴール判定
     if (row === goalRow && col === goalCol) {
         alert("ゴール！勝利！");
         initializeBoard();
     }
 }
-
-// 初期化
-initializeBoard();
