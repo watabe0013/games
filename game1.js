@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const rows = 9;
 const cols = 9;
-const mineCount = 10;
+const mineCount = 7; // 地雷の数を7個に設定
 const startRow = 8; // 一番下
 const startCol = 4; // 真ん中の列
 const goalRow = 0; // 一番上
@@ -13,9 +13,8 @@ const goalCol = 4; // 真ん中の列
 let board = [];
 let mines = new Set();
 let playerPosition = { row: startRow, col: startCol };
-let revealedCells = new Set(); // 開けたマスのセット
+let revealedCells = new Set();
 
-// ボード初期化
 function initializeBoard() {
     console.log("ボード初期化開始");
     const gameBoard = document.getElementById("game-board");
@@ -29,47 +28,62 @@ function initializeBoard() {
     mines.clear();
     revealedCells.clear();
 
-    // 地雷を配置（スタート地点には地雷を置かない）
+    placeMines();
+    calculateNumbers();
+    revealCell(startRow, startCol);
+    drawBoard();
+    updatePlayerPosition();
+
+    console.log("ボード初期化完了");
+}
+
+// 地雷を配置する関数（スタート・ゴール・スタートの周囲には配置しない）
+function placeMines() {
+    mines.clear();
     while (mines.size < mineCount) {
         let r = Math.floor(Math.random() * rows);
         let c = Math.floor(Math.random() * cols);
-        if ((r !== startRow || c !== startCol) && (r !== goalRow || c !== goalCol)) {
-            mines.add(`${r},${c}`);
-            board[r][c] = "M";
+
+        // スタート地点、ゴール地点、およびスタート地点の周囲には地雷を置かない
+        if (isSafeZone(r, c)) continue;
+
+        mines.add(`${r},${c}`);
+    }
+}
+
+// スタート地点、ゴール地点、スタート周囲のマスをチェック
+function isSafeZone(row, col) {
+    // スタート地点とゴール地点
+    if ((row === startRow && col === startCol) || (row === goalRow && col === goalCol)) {
+        return true;
+    }
+
+    // スタート地点の周囲8マス
+    let directions = [
+        [-1, -1], [-1, 0], [-1, 1],
+        [0, -1], [0, 0], [0, 1],
+        [1, -1], [1, 0], [1, 1]
+    ];
+    
+    for (let [dr, dc] of directions) {
+        if (row === startRow + dr && col === startCol + dc) {
+            return true;
         }
     }
+    return false;
+}
 
-    // スタート地点の周囲に地雷がないようにする
-    if (countMines(startRow, startCol) > 0) {
-        console.log("スタート位置の周囲に地雷があるため、リセット");
-        return initializeBoard(); // 再生成
-    }
-
-    // 地雷カウントを計算
+// 数字を計算する関数
+function calculateNumbers() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (board[r][c] === "M") continue;
-            board[r][c] = countMines(r, c);
+            if (mines.has(`${r},${c}`)) {
+                board[r][c] = "M";
+            } else {
+                board[r][c] = countMines(r, c);
+            }
         }
     }
-
-    // スタート位置のマスを開ける
-    revealCell(startRow, startCol);
-
-    // ボードを描画
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            let cell = document.createElement("div");
-            cell.classList.add("cell");
-            cell.dataset.row = r;
-            cell.dataset.col = c;
-            cell.addEventListener("click", () => handleCellClick(r, c));
-            gameBoard.appendChild(cell);
-        }
-    }
-
-    updatePlayerPosition();
-    console.log("ボード初期化完了");
 }
 
 // 指定マスの周囲の地雷数を数える
@@ -87,6 +101,22 @@ function countMines(row, col) {
         }
     }
     return count;
+}
+
+// ボードを描画
+function drawBoard() {
+    const gameBoard = document.getElementById("game-board");
+    gameBoard.innerHTML = "";
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            cell.addEventListener("click", () => handleCellClick(r, c));
+            gameBoard.appendChild(cell);
+        }
+    }
 }
 
 // プレイヤーの位置を更新
