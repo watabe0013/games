@@ -36,3 +36,8 @@ body {
 .cell.player {
     border: 3px solid blue;
 }
+
+/* 選択可能なマスの色を濃くする */
+.cell.selectable {
+    background-color: #bbb;
+}

@@ -5,14 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
 const rows = 9;
 const cols = 9;
 const mineCount = 10;
-const startRow = 8; // 一番下（0始まりなので8）
-const startCol = 4; // 真ん中の列（0始まりなので4）
+const startRow = 8; // 一番下
+const startCol = 4; // 真ん中の列
 const goalRow = 0; // 一番上
 const goalCol = 4; // 真ん中の列
 
 let board = [];
 let mines = new Set();
 let playerPosition = { row: startRow, col: startCol };
+let revealedCells = new Set(); // 開けたマスのセット
 
 // ボード初期化
 function initializeBoard() {
@@ -25,6 +26,8 @@ function initializeBoard() {
 
     gameBoard.innerHTML = "";
     board = Array.from({ length: rows }, () => Array(cols).fill(0));
+    mines.clear();
+    revealedCells.clear();
 
     // 地雷を配置
     while (mines.size < mineCount) {
@@ -44,6 +47,9 @@ function initializeBoard() {
             board[r][c] = count; // 0 も明示的に表示
         }
     }
+
+    // スタート位置のマスを開ける
+    revealCell(startRow, startCol);
 
     // ボードを描画
     for (let r = 0; r < rows; r++) {
@@ -83,31 +89,45 @@ function updatePlayerPosition() {
     document.querySelectorAll(".cell").forEach(cell => {
         let r = parseInt(cell.dataset.row);
         let c = parseInt(cell.dataset.col);
-        cell.classList.remove("player");
+        cell.classList.remove("player", "selectable");
+
         if (r === playerPosition.row && c === playerPosition.col) {
             cell.classList.add("player");
+        } else if (isSelectable(r, c)) {
+            cell.classList.add("selectable");
         }
     });
 
     document.getElementById("current-position").textContent = `${playerPosition.row + 1},${playerPosition.col + 1}`;
 }
 
+// すでに開けたマスの周囲のマスをすべて選択可能に
+function isSelectable(row, col) {
+    if (revealedCells.has(`${row},${col}`)) return false;
+    for (let key of revealedCells) {
+        let [r, c] = key.split(",").map(Number);
+        if (Math.abs(r - row) <= 1 && Math.abs(c - col) <= 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // セルを開く処理
 function handleCellClick(row, col) {
-    if (Math.abs(row - playerPosition.row) > 1 || Math.abs(col - playerPosition.col) > 1) {
-        return;
-    }
+    if (!isSelectable(row, col)) return;
 
     let cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
     cell.classList.add("revealed");
 
     if (mines.has(`${row},${col}`)) {
         cell.classList.add("mine");
-        alert("地雷を踏んだ！ゲームオーバー！");
+        alert("地雷を踏んだ！最初から再スタート！");
+        playerPosition = { row: startRow, col: startCol };
         initializeBoard();
         return;
     } else {
-        cell.textContent = board[row][col]; // 0も表示
+        revealCell(row, col);
     }
 
     playerPosition = { row, col };
@@ -115,6 +135,19 @@ function handleCellClick(row, col) {
 
     if (row === goalRow && col === goalCol) {
         alert("ゴール！勝利！");
+        playerPosition = { row: startRow, col: startCol };
         initializeBoard();
     }
+}
+
+// マスを開く（0 も表示する）
+function revealCell(row, col) {
+    let cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    if (!cell || revealedCells.has(`${row},${col}`)) return;
+
+    cell.classList.add("revealed");
+    cell.textContent = board[row][col];
+    revealedCells.add(`${row},${col}`);
+
+    updatePlayerPosition();
 }
