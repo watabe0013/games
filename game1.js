@@ -93,4 +93,28 @@ function updatePlayerPosition() {
 }
 
 // セルを開く処理
-function
+function handleCellClick(row, col) {
+    if (Math.abs(row - playerPosition.row) > 1 || Math.abs(col - playerPosition.col) > 1) {
+        return;
+    }
+
+    let cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    cell.classList.add("revealed");
+
+    if (mines.has(`${row},${col}`)) {
+        cell.classList.add("mine");
+        alert("地雷を踏んだ！ゲームオーバー！");
+        initializeBoard();
+        return;
+    } else {
+        cell.textContent = board[row][col]; // 0も表示
+    }
+
+    playerPosition = { row, col };
+    updatePlayerPosition();
+
+    if (row === goalRow && col === goalCol) {
+        alert("ゴール！勝利！");
+        initializeBoard();
+    }
+}
