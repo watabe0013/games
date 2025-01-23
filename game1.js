@@ -26,6 +26,7 @@ function initializeGrid() {
     }
     placeMines();
     calculateNumbers();
+    setStartCell();
     setSelectableCells();
     renderGrid();
 }
@@ -49,6 +50,14 @@ function isSafeZone(x, y) {
     const startX = Math.floor(GRID_SIZE / 2);
     const startY = GRID_SIZE - 1;
     return Math.abs(x - startX) <= 1 && Math.abs(y - startY) <= 1;
+}
+
+// スタートマスをオープンにする
+function setStartCell() {
+    const startX = Math.floor(GRID_SIZE / 2);
+    const startY = GRID_SIZE - 1;
+    grid[startY][startX].isOpen = true;
+    updateSelectableCells(startX, startY);
 }
 
 // 選択可能なマスを設定
@@ -132,20 +141,6 @@ function openCell(x, y) {
         updateSelectableCells(x, y);
     }
     checkWin();
-}
-
-// 開けたマスの周囲のマスを選択可能にする
-function updateSelectableCells(x, y) {
-    for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-            let newX = x + dx;
-            let newY = y + dy;
-            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && !grid[newY][newX].isOpen) {
-                grid[newY][newX].isSelectable = true;
-            }
-        }
-    }
-    renderGrid();
 }
 
 // クリア判定
