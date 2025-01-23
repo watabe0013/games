@@ -1,4 +1,4 @@
-const GRID_SIZE = 15;
+const GRID_SIZE = 9;
 const MINE_COUNT = 7;
 let grid = [];
 
@@ -10,6 +10,7 @@ class Cell {
         this.isOpen = false;
         this.isMine = false;
         this.surroundingMines = 0;
+        this.isSelectable = false; // 選択可能マスの判定
     }
 }
 
@@ -25,6 +26,7 @@ function initializeGrid() {
     }
     placeMines();
     calculateNumbers();
+    setSelectableCells();
     renderGrid();
 }
 
@@ -47,6 +49,19 @@ function isSafeZone(x, y) {
     const startX = Math.floor(GRID_SIZE / 2);
     const startY = GRID_SIZE - 1;
     return Math.abs(x - startX) <= 1 && Math.abs(y - startY) <= 1;
+}
+
+// 選択可能なマスを設定
+function setSelectableCells() {
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            if (y === GRID_SIZE - 1 && x === Math.floor(GRID_SIZE / 2)) {
+                grid[y][x].isOpen = true; // スタート地点を開く
+            } else if (isSafeZone(x, y)) {
+                grid[y][x].isSelectable = true;
+            }
+        }
+    }
 }
 
 // 周囲の地雷数を計算
@@ -88,6 +103,16 @@ function renderGrid() {
             cell.classList.add('cell');
             cell.dataset.x = x;
             cell.dataset.y = y;
+            
+            if (grid[y][x].isOpen) {
+                cell.textContent = grid[y][x].surroundingMines || '';
+                cell.style.backgroundColor = '#bbb';
+            } else if (grid[y][x].isSelectable) {
+                cell.style.backgroundColor = '#666'; // 濃い灰色（選択可能）
+            } else {
+                cell.style.backgroundColor = '#999'; // 薄い灰色（選択不可）
+            }
+            
             cell.addEventListener('click', () => openCell(x, y));
             gameContainer.appendChild(cell);
         }
@@ -96,9 +121,9 @@ function renderGrid() {
 
 // マスを開く
 function openCell(x, y) {
-    if (grid[y][x].isOpen) return;
+    if (grid[y][x].isOpen || !grid[y][x].isSelectable) return;
     grid[y][x].isOpen = true;
-
+    
     let cell = document.querySelector(`[data-x='${x}'][data-y='${y}']`);
     if (grid[y][x].isMine) {
         cell.textContent = '☓';
