@@ -57,6 +57,7 @@ function setStartCell() {
     const startX = Math.floor(GRID_SIZE / 2);
     const startY = GRID_SIZE - 1;
     grid[startY][startX].isOpen = true;
+    grid[startY][startX].isSelectable = true;
     updateSelectableCells(startX, startY);
 }
 
