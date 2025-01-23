@@ -34,8 +34,8 @@ function placeMines() {
     while (minesPlaced < MINE_COUNT) {
         let x = Math.floor(Math.random() * GRID_SIZE);
         let y = Math.floor(Math.random() * GRID_SIZE);
-
-        if (!grid[y][x].isMine && !isSafeZone(x, y)) {
+        
+        if (!grid[y][x].isMine && !isSafeZone(x, y) && !isGoalZone(x, y)) {
             grid[y][x].isMine = true;
             minesPlaced++;
         }
@@ -46,6 +46,11 @@ function isSafeZone(x, y) {
     const startX = Math.floor(GRID_SIZE / 2);
     const startY = GRID_SIZE - 1;
     return Math.abs(x - startX) <= 1 && Math.abs(y - startY) <= 1;
+}
+
+function isGoalZone(x, y) {
+    const goalX = Math.floor(GRID_SIZE / 2);
+    return y === 0 && x === goalX;
 }
 
 function setStartCell() {
@@ -106,14 +111,14 @@ function renderGrid() {
             cell.classList.add('cell');
             cell.dataset.x = x;
             cell.dataset.y = y;
-
+            
             if (grid[y][x].isOpen) {
                 cell.textContent = grid[y][x].surroundingMines || '0';
                 cell.style.backgroundColor = '#bbb';
             } else {
                 cell.style.backgroundColor = grid[y][x].isSelectable ? '#666' : '#999';
             }
-
+            
             cell.addEventListener('click', () => openCell(x, y));
             gameContainer.appendChild(cell);
         }
@@ -123,7 +128,7 @@ function renderGrid() {
 function openCell(x, y) {
     if (!grid[y][x].isSelectable) return;
     grid[y][x].isOpen = true;
-
+    
     let cell = document.querySelector(`[data-x='${x}'][data-y='${y}']`);
     if (grid[y][x].isMine) {
         cell.textContent = '☓';
@@ -136,19 +141,6 @@ function openCell(x, y) {
         updateSelectableCells(x, y);
     }
     checkWin();
-}
-
-function updateSelectableCells(x, y) {
-    for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-            let newX = x + dx;
-            let newY = y + dy;
-            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && !grid[newY][newX].isOpen) {
-                grid[newY][newX].isSelectable = true;
-            }
-        }
-    }
-    renderGrid();
 }
 
 function checkWin() {
