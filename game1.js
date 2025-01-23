@@ -55,9 +55,8 @@ function isSafeZone(x, y) {
 function setSelectableCells() {
     for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
-            if (y === GRID_SIZE - 1 && x === Math.floor(GRID_SIZE / 2)) {
-                grid[y][x].isOpen = true; // スタート地点を開く
-                openAdjacentCells(x, y); // 周囲を開く
+            if (grid[y][x].isOpen) {
+                updateSelectableCells(x, y);
             }
         }
     }
@@ -104,7 +103,7 @@ function renderGrid() {
             cell.dataset.y = y;
             
             if (grid[y][x].isOpen) {
-                cell.textContent = grid[y][x].surroundingMines;
+                cell.textContent = grid[y][x].surroundingMines || '0';
                 cell.style.backgroundColor = '#bbb';
             } else {
                 cell.style.backgroundColor = grid[y][x].isSelectable ? '#666' : '#999';
@@ -118,7 +117,7 @@ function renderGrid() {
 
 // マスを開く & 周囲をオープン可能にする
 function openCell(x, y) {
-    if (grid[y][x].isOpen) return;
+    if (!grid[y][x].isSelectable) return;
     grid[y][x].isOpen = true;
     
     let cell = document.querySelector(`[data-x='${x}'][data-y='${y}']`);
@@ -128,22 +127,33 @@ function openCell(x, y) {
         alert('ゲームオーバー！');
         initializeGrid();
     } else {
-        cell.textContent = grid[y][x].surroundingMines;
+        cell.textContent = grid[y][x].surroundingMines || '0';
         cell.style.backgroundColor = '#bbb';
-        openAdjacentCells(x, y);
+        updateSelectableCells(x, y);
     }
+    checkWin();
 }
 
-// 周囲のマスをオープン可能にする
-function openAdjacentCells(x, y) {
+// 開けたマスの周囲のマスを選択可能にする
+function updateSelectableCells(x, y) {
     for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
             let newX = x + dx;
             let newY = y + dy;
-            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && !grid[newY][newX].isMine) {
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && !grid[newY][newX].isOpen) {
                 grid[newY][newX].isSelectable = true;
             }
         }
+    }
+    renderGrid();
+}
+
+// クリア判定
+function checkWin() {
+    const goalX = Math.floor(GRID_SIZE / 2);
+    if (grid[0][goalX].isOpen) {
+        alert('クリア！おめでとう！');
+        initializeGrid();
     }
 }
 
