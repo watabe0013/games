@@ -25,9 +25,10 @@ function initializeGrid() {
     }
     placeMines();
     calculateNumbers();
+    renderGrid();
 }
 
-// 地雷の配置（ランダム）
+// 地雷の配置
 function placeMines() {
     let minesPlaced = 0;
     while (minesPlaced < MINE_COUNT) {
@@ -76,6 +77,41 @@ function countSurroundingMines(x, y) {
     return count;
 }
 
+// 盤面を表示
+function renderGrid() {
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.innerHTML = '';
+
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            let cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.dataset.x = x;
+            cell.dataset.y = y;
+            cell.addEventListener('click', () => openCell(x, y));
+            gameContainer.appendChild(cell);
+        }
+    }
+}
+
+// マスを開く
+function openCell(x, y) {
+    if (grid[y][x].isOpen) return;
+    grid[y][x].isOpen = true;
+
+    let cell = document.querySelector(`[data-x='${x}'][data-y='${y}']`);
+    if (grid[y][x].isMine) {
+        cell.textContent = '☓';
+        cell.style.backgroundColor = 'red';
+        alert('ゲームオーバー！');
+        initializeGrid();
+    } else {
+        cell.textContent = grid[y][x].surroundingMines || '';
+        cell.style.backgroundColor = '#bbb';
+    }
+}
+
 // ゲームのスタート
-initializeGrid();
-console.log(grid);
+document.addEventListener("DOMContentLoaded", () => {
+    initializeGrid();
+});
