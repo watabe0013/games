@@ -57,8 +57,7 @@ function setSelectableCells() {
         for (let x = 0; x < GRID_SIZE; x++) {
             if (y === GRID_SIZE - 1 && x === Math.floor(GRID_SIZE / 2)) {
                 grid[y][x].isOpen = true; // スタート地点を開く
-            } else if (isSafeZone(x, y)) {
-                grid[y][x].isSelectable = true;
+                openAdjacentCells(x, y); // 周囲を開く
             }
         }
     }
@@ -105,12 +104,10 @@ function renderGrid() {
             cell.dataset.y = y;
             
             if (grid[y][x].isOpen) {
-                cell.textContent = grid[y][x].surroundingMines || '';
+                cell.textContent = grid[y][x].surroundingMines;
                 cell.style.backgroundColor = '#bbb';
-            } else if (grid[y][x].isSelectable) {
-                cell.style.backgroundColor = '#666'; // 濃い灰色（選択可能）
             } else {
-                cell.style.backgroundColor = '#999'; // 薄い灰色（選択不可）
+                cell.style.backgroundColor = grid[y][x].isSelectable ? '#666' : '#999';
             }
             
             cell.addEventListener('click', () => openCell(x, y));
@@ -119,9 +116,9 @@ function renderGrid() {
     }
 }
 
-// マスを開く
+// マスを開く & 周囲をオープン可能にする
 function openCell(x, y) {
-    if (grid[y][x].isOpen || !grid[y][x].isSelectable) return;
+    if (grid[y][x].isOpen) return;
     grid[y][x].isOpen = true;
     
     let cell = document.querySelector(`[data-x='${x}'][data-y='${y}']`);
@@ -131,8 +128,22 @@ function openCell(x, y) {
         alert('ゲームオーバー！');
         initializeGrid();
     } else {
-        cell.textContent = grid[y][x].surroundingMines || '';
+        cell.textContent = grid[y][x].surroundingMines;
         cell.style.backgroundColor = '#bbb';
+        openAdjacentCells(x, y);
+    }
+}
+
+// 周囲のマスをオープン可能にする
+function openAdjacentCells(x, y) {
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            let newX = x + dx;
+            let newY = y + dy;
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && !grid[newY][newX].isMine) {
+                grid[newY][newX].isSelectable = true;
+            }
+        }
     }
 }
 
