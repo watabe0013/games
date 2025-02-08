@@ -3,19 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地雷回避迷路</title>
-    <link rel="stylesheet" href="game1.css">
+    <title>トレジャーマインス</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { background: #f8f8f8; border: 2px solid black; }
+        #message { font-size: 18px; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <h1>地雷回避迷路</h1>
-    <p class="rules">スタート地点からゴールまで地雷を避けながら進みましょう。スタート地点（下中央）からゴール地点（上中央）を目指してください。周囲の地雷の数をヒントに安全な道を見つけてください。</p>
-    <div id="game-area">
-        <div class="fence fence-top"></div>
-        <div class="fence fence-left"></div>
-        <div id="game-container"></div>
-        <div class="fence fence-right"></div>
-        <div class="fence fence-bottom"></div>
-    </div>
-    <script src="game1.js"></script>
+    <h1>トレジャーマインス</h1>
+    <canvas id="gameCanvas"></canvas>
+    <p id="message">宝箱を見つけよう！</p>
+    <script>
+        const GRID_SIZE = 10;
+        const CELL_SIZE = 40;
+        const NUM_MINES = 10;
+        const NUM_TREASURES = 5;
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const message = document.getElementById("message");
+        canvas.width = GRID_SIZE * CELL_SIZE;
+        canvas.height = GRID_SIZE * CELL_SIZE;
+
+        let board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+        let revealed = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+        let treasureFound = 0;
+
+        function placeObjects(num, type) {
+            let count = 0;
+            while (count < num) {
+                let x = Math.floor(Math.random() * GRID_SIZE);
+                let y = Math.floor(Math.random() * GRID_SIZE);
+                if (board[y][x] === 0) {
+                    board[y][x] = type;
+                    count++;
+                }
+            }
+        }
+
+        function calculateNumbers() {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (board[y][x] === -1) continue;
+                    let count = 0;
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            let nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && board[ny][nx] === -1) {
+                                count++;
+                            }
+                        }
+                    }
+                    if (board[y][x] !== 9) board[y][x] = count;
+                }
+            }
+        }
+
+        function getTreasureHint(x, y) {
+            let minDistance = Infinity;
+            let direction = "";
+            for (let ty = 0; ty < GRID_SIZE; ty++) {
+                for (let tx = 0; tx < GRID_SIZE; tx++) {
+                    if (board[ty][tx] === 9) {
+                        let distance = Math.abs(tx - x) + Math.abs(ty - y);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            direction = tx > x ? "→" : tx < x ? "←" : ty > y ? "↓" : "↑";
+                        }
+                    }
+                }
+            }
+            return direction;
+        }
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    ctx.strokeStyle = "black";
+                    ctx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    if (revealed[y][x]) {
+                        if (board[y][x] === -1) {
+                            ctx.fillStyle = "red";
+                            ctx.beginPath();
+                            ctx.arc(x * CELL_SIZE + 20, y * CELL_SIZE + 20, 10, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (board[y][x] === 9) {
+                            ctx.fillStyle = "gold";
+                            ctx.beginPath();
+                            ctx.arc(x * CELL_SIZE + 20, y * CELL_SIZE + 20, 10, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else {
+                            ctx.fillStyle = "black";
+                            ctx.font = "20px Arial";
+                            ctx.fillText(board[y][x], x * CELL_SIZE + 15, y * CELL_SIZE + 25);
+                            let hint = getTreasureHint(x, y);
+                            if (hint) ctx.fillText(hint, x * CELL_SIZE + 30, y * CELL_SIZE + 30);
+                        }
+                    }
+                }
+            }
+        }
+
+        function revealCell(x, y) {
+            if (revealed[y][x]) return;
+            revealed[y][x] = true;
+            if (board[y][x] === -1) {
+                message.textContent = "ゲームオーバー！";
+                canvas.removeEventListener("click", handleClick);
+            } else if (board[y][x] === 9) {
+                treasureFound++;
+                if (treasureFound === NUM_TREASURES) {
+                    message.textContent = "全ての宝箱を見つけた！ゲームクリア！";
+                    canvas.removeEventListener("click", handleClick);
+                }
+            }
+            drawBoard();
+        }
+
+        function handleClick(event) {
+            let rect = canvas.getBoundingClientRect();
+            let x = Math.floor((event.clientX - rect.left) / CELL_SIZE);
+            let y = Math.floor((event.clientY - rect.top) / CELL_SIZE);
+            revealCell(x, y);
+        }
+
+        function initGame() {
+            placeObjects(NUM_MINES, -1);
+            placeObjects(NUM_TREASURES, 9);
+            calculateNumbers();
+            drawBoard();
+            canvas.addEventListener("click", handleClick);
+        }
+
+        initGame();
+    </script>
 </body>
 </html>
