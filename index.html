@@ -2,98 +2,97 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ブラウザゲームコレクション</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <title>ブラウザゲーム制作プロジェクト</title>
   <style>
-    /* ベースのスタイル */
     body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
       margin: 0;
-      padding: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      color: #333;
+      padding: 20px;
     }
     header {
       text-align: center;
-      margin-top: 40px;
-      color: #fff;
+      padding: 10px;
     }
-    header h1 {
-      font-size: 3em;
-      margin: 0;
-      letter-spacing: 2px;
-    }
-    header p {
-      font-size: 1.2em;
-      margin-top: 10px;
-    }
-    .game-container {
-      background: rgba(255, 255, 255, 0.95);
-      width: 90%;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-    .game-container h2 {
-      margin-top: 0;
-      font-size: 2em;
-      color: #444;
-    }
-    .game-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .game-list li {
+    nav {
+      text-align: center;
       margin: 20px 0;
-      display: flex;
-      justify-content: center;
     }
-    .game-button {
+    nav a {
+      margin: 0 15px;
       text-decoration: none;
-      background: linear-gradient(45deg, #FF6B6B, #FFD93D);
-      color: #fff;
-      padding: 15px 25px;
-      border-radius: 30px;
-      font-size: 1.2em;
-      transition: background 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-size: 18px;
+      color: #333;
+      padding: 8px 16px;
+      background-color: #e0e0e0;
+      border-radius: 4px;
     }
-    .game-button:hover {
-      background: linear-gradient(45deg, #FFD93D, #FF6B6B);
+    nav a:hover {
+      background-color: #ccc;
+    }
+    section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
     }
     footer {
-      margin-top: auto;
-      padding: 20px;
       text-align: center;
-      color: #fff;
-      font-size: 0.9em;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>ブラウザゲームコレクション</h1>
-    <p>遊び心をくすぐるオリジナルゲームがここに</p>
+    <h1>ブラウザゲーム制作プロジェクト</h1>
+    <p>言葉を使ったパズルゲームの数々</p>
   </header>
-  
-  <div class="game-container">
+  <nav>
+    <!-- 各ゲームページへのリンク -->
+    <a href="game2_tantei.html">クロスワード探偵</a>
+    <!-- 今後他のゲームが追加される場合、リンクを追加可能 -->
+  </nav>
+  <section>
     <h2>ゲーム一覧</h2>
-    <ul class="game-list">
-      <li><a href="game1_mine.html" class="game-button">トレジャーマインス</a></li>
-      <li><a href="#" class="game-button" onclick="alert('開発中です！')">ゲーム2（開発中）</a></li>
-      <li><a href="#" class="game-button" onclick="alert('開発中です！')">ゲーム3（開発中）</a></li>
-    </ul>
-  </div>
-  
+    <p>本プロジェクトでは、複数の言葉パズルゲームを開発しています。下記の一覧からお好みのゲームを選択してください。</p>
+    <table>
+      <tr>
+        <th>ゲーム名</th>
+        <th>概要</th>
+        <th>リンク</th>
+      </tr>
+      <tr>
+        <td>クロスワード探偵</td>
+        <td>
+          探偵となり、事件の手がかりを得るためにクロスワードパズルで謎を解くミステリーゲーム。<br>
+          【特徴】<br>
+          ・事件は3件用意<br>
+          ・各事件ごとに異なるパズルと手がかり
+        </td>
+        <td style="text-align: center;">
+          <a href="game2_tantei.html">プレイする</a>
+        </td>
+      </tr>
+      <!-- 他のゲーム情報をここに追加可能 -->
+    </table>
+  </section>
   <footer>
-    © 2025 ブラウザゲーム制作プロジェクト. All rights reserved.
+    <p>&copy; 2025 ブラウザゲーム制作プロジェクト</p>
   </footer>
 </body>
 </html>
