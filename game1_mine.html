@@ -18,13 +18,18 @@
       align-items: center;
       color: #333;
     }
-    /* ヘッダはメインページと同じ幅に設定 */
+    /* ヘッダ（高さを150pxに固定、メインページと同じ高さに設定） */
     header {
       width: 90%;
       max-width: 700px;
       margin: 40px auto 0;
-      text-align: center;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       color: #fff;
+      text-align: center;
     }
     header h1 {
       font-size: 3em;
@@ -53,7 +58,7 @@
       margin-top: 0;
       color: #444;
     }
-    /* キャンバスは余白を持たせ、外側は黄緑に */
+    /* キャンバスは黄緑の背景（地雷原外）＋余白（マージン）をもたせたサイズに */
     #gameCanvas {
       display: block;
       margin: 0 auto;
@@ -104,7 +109,7 @@
       </p>
     </div>
     
-    <!-- キャンバスは外側に黄緑、内部に余白（マージン）をもって地雷原を描画 -->
+    <!-- キャンバスは、地雷原外が黄緑、内部余白付き -->
     <canvas id="gameCanvas" width="440" height="440"></canvas>
     <p id="message">宝箱を見つけよう！</p>
     <div style="text-align: center;">
@@ -179,7 +184,7 @@
     }
 
     function drawBoard() {
-      // 全体を黄緑で塗りつぶし（地雷原の外）
+      // キャンバス全体を黄緑で塗りつぶし（地雷原外）
       ctx.fillStyle = "#ADFF2F";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
@@ -194,7 +199,7 @@
           const cellX = MARGIN + x * CELL_SIZE;
           const cellY = MARGIN + y * CELL_SIZE;
           
-          // オープン状態でなければ薄い灰色、オープン済みなら白で塗りつぶし
+          // 未オープンのセルは薄い灰色、オープン済みは白
           ctx.fillStyle = revealed[y][x] ? "#FFFFFF" : "#d3d3d3";
           ctx.fillRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
           
