@@ -18,12 +18,10 @@
       align-items: center;
       color: #333;
     }
-    /* ヘッダ（高さを150pxに固定、メインページと同じ高さに設定） */
+    /* ヘッダ：全幅表示、余計な幅制限を除去し、高さ75pxに設定 */
     header {
-      width: 90%;
-      max-width: 700px;
-      margin: 40px auto 0;
-      height: 150px;
+      margin-top: 40px;
+      height: 75px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -58,7 +56,7 @@
       margin-top: 0;
       color: #444;
     }
-    /* キャンバスは黄緑の背景（地雷原外）＋余白（マージン）をもたせたサイズに */
+    /* キャンバス：外側は黄緑、内部は地雷原としてマージン付き */
     #gameCanvas {
       display: block;
       margin: 0 auto;
@@ -109,7 +107,7 @@
       </p>
     </div>
     
-    <!-- キャンバスは、地雷原外が黄緑、内部余白付き -->
+    <!-- キャンバス：サイズは地雷原の内部（余白付き） -->
     <canvas id="gameCanvas" width="440" height="440"></canvas>
     <p id="message">宝箱を見つけよう！</p>
     <div style="text-align: center;">
