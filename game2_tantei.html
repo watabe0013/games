@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>クロスワード探偵</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3 {
+      text-align: center;
+    }
+    #incidentSelector {
+      text-align: center;
+      margin: 20px 0;
+    }
+    #incidentSelector button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #gameArea {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+    .result {
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>クロスワード探偵</h1>
+  <div id="incidentSelector">
+    <button onclick="loadIncident(0)">事件1</button>
+    <button onclick="loadIncident(1)">事件2</button>
+    <button onclick="loadIncident(2)">事件3</button>
+  </div>
+  <div id="gameArea">
+    <!-- ここに事件の詳細とパズルが表示されます -->
+    <p style="text-align: center;">上のボタンから事件を選択してください。</p>
+  </div>
+
+  <script>
+    // 事件データの定義
+    const incidents = [
+      {
+        title: "事件1: 消えた宝石",
+        description: "舞台は高級ホテル。展示室から貴重な宝石が消えた。名探偵が事件の真相を解明する。",
+        clues: {
+          across: [
+            { number: 1, clue: "宝石の隠し場所", answer: "VAULT" }
+          ],
+          down: [
+            { number: 2, clue: "名探偵の名前", answer: "HOLMES" }
+          ]
+        }
+      },
+      {
+        title: "事件2: 消えた肖像画",
+        description: "有名美術館で肖像画が忽然と姿を消した。関係者の証言が錯綜する中、真相は闇に葬られる。",
+        clues: {
+          across: [
+            { number: 1, clue: "肖像画が展示される部屋", answer: "GALLERY" }
+          ],
+          down: [
+            { number: 2, clue: "画家の名前", answer: "PICASSO" }
+          ]
+        }
+      },
+      {
+        title: "事件3: 消えた秘密文書",
+        description: "政府機密の秘密文書が突如消失。数多の陰謀と裏切りが絡む中、捜査は難航する。",
+        clues: {
+          across: [
+            { number: 1, clue: "秘密文書の保管場所", answer: "ARCHIVE" }
+          ],
+          down: [
+            { number: 2, clue: "捜査の手がかり", answer: "EVIDENCE" }
+          ]
+        }
+      }
+    ];
+
+    // 事件を読み込み、パズル画面を生成する関数
+    function loadIncident(index) {
+      const incident = incidents[index];
+      let html = "";
+
+      // 事件タイトルと説明
+      html += "<h2>" + incident.title + "</h2>";
+      html += "<p>" + incident.description + "</p>";
+      html += "<h3>クロスワードパズルの手がかり</h3>";
+
+      // 表形式でヒントを表示（横と縦の両方）
+      html += "<table>";
+      html += "<tr><th>番号</th><th>方向</th><th>ヒント</th><th>答え</th></tr>";
+      // 横のヒント
+      incident.clues.across.forEach(function(item, idx) {
+        html += "<tr>";
+        html += "<td>" + item.number + "</td>";
+        html += "<td>横</td>";
+        html += "<td>" + item.clue + "</td>";
+        html += "<td><input type='text' id='across_" + idx + "' placeholder='答えを入力'></td>";
+        html += "</tr>";
+      });
+      // 縦のヒント
+      incident.clues.down.forEach(function(item, idx) {
+        html += "<tr>";
+        html += "<td>" + item.number + "</td>";
+        html += "<td>縦</td>";
+        html += "<td>" + item.clue + "</td>";
+        html += "<td><input type='text' id='down_" + idx + "' placeholder='答えを入力'></td>";
+        html += "</tr>";
+      });
+      html += "</table>";
+
+      // 答え確認ボタンと結果表示エリア
+      html += "<div style='text-align:center;'>";
+      html += "<button onclick='checkAnswers(" + index + ")'>答えを確認</button>";
+      html += "</div>";
+      html += "<div id='result'></div>";
+
+      document.getElementById("gameArea").innerHTML = html;
+    }
+
+    // 入力された答えをチェックする関数
+    function checkAnswers(index) {
+      const incident = incidents[index];
+      let allCorrect = true;
+
+      // 横の答えをチェック
+      incident.clues.across.forEach(function(item, idx) {
+        const userAnswer = document.getElementById("across_" + idx).value.trim().toUpperCase();
+        if (userAnswer !== item.answer.toUpperCase()) {
+          allCorrect = false;
+        }
+      });
+      
+      // 縦の答えをチェック
+      incident.clues.down.forEach(function(item, idx) {
+        const userAnswer = document.getElementById("down_" + idx).value.trim().toUpperCase();
+        if (userAnswer !== item.answer.toUpperCase()) {
+          allCorrect = false;
+        }
+      });
+
+      // 結果表示
+      const resultDiv = document.getElementById("result");
+      if (allCorrect) {
+        resultDiv.innerHTML = "<p class='result'>全て正解です！事件解決！</p>";
+      } else {
+        resultDiv.innerHTML = "<p class='result'>いくつかの答えが間違っています。もう一度挑戦してください。</p>";
+      }
+    }
+  </script>
+</body>
+</html>
