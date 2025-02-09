@@ -15,12 +15,14 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      color: #333;
       align-items: center;
+      color: #333;
     }
-    
+    /* ヘッダはメインページと同じ幅に設定 */
     header {
-      margin-top: 40px;
+      width: 90%;
+      max-width: 700px;
+      margin: 40px auto 0;
       text-align: center;
       color: #fff;
     }
@@ -33,7 +35,6 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
-    
     .container {
       background: rgba(255, 255, 255, 0.95);
       width: 90%;
@@ -43,7 +44,6 @@
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
-    
     .game-description {
       text-align: left;
       margin-bottom: 20px;
@@ -53,20 +53,17 @@
       margin-top: 0;
       color: #444;
     }
-    
+    /* キャンバスは余白を持たせ、外側は黄緑に */
     #gameCanvas {
-      background: #f8f8f8;
-      border: 2px solid #333;
       display: block;
       margin: 0 auto;
+      background: #ADFF2F;
     }
-    
     #message {
       text-align: center;
       font-size: 18px;
       margin-top: 10px;
     }
-    
     .btn {
       display: inline-block;
       margin-top: 20px;
@@ -84,7 +81,6 @@
     .btn:hover {
       background: linear-gradient(45deg, #FFD93D, #FF6B6B);
     }
-    
     footer {
       margin-top: auto;
       padding: 20px;
@@ -108,7 +104,8 @@
       </p>
     </div>
     
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <!-- キャンバスは外側に黄緑、内部に余白（マージン）をもって地雷原を描画 -->
+    <canvas id="gameCanvas" width="440" height="440"></canvas>
     <p id="message">宝箱を見つけよう！</p>
     <div style="text-align: center;">
       <a href="index.html" class="btn">メインページへ戻る</a>
@@ -124,6 +121,8 @@
     const CELL_SIZE = 40;
     const NUM_MINES = 10;
     const NUM_TREASURES = 5;
+    const MARGIN = 20; // キャンバス内の地雷原の余白
+
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const message = document.getElementById("message");
@@ -180,29 +179,50 @@
     }
 
     function drawBoard() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // 全体を黄緑で塗りつぶし（地雷原の外）
+      ctx.fillStyle = "#ADFF2F";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 地雷原の枠を描画
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(MARGIN, MARGIN, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+      
+      // 各セルの描画
       for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
-          ctx.strokeStyle = "#333";
-          ctx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          const cellX = MARGIN + x * CELL_SIZE;
+          const cellY = MARGIN + y * CELL_SIZE;
+          
+          // オープン状態でなければ薄い灰色、オープン済みなら白で塗りつぶし
+          ctx.fillStyle = revealed[y][x] ? "#FFFFFF" : "#d3d3d3";
+          ctx.fillRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
+          
+          // セルの枠（薄いグレー）
+          ctx.strokeStyle = "#999";
+          ctx.strokeRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
+          
           if (revealed[y][x]) {
             if (board[y][x] === -1) {
+              // 地雷
               ctx.fillStyle = "red";
               ctx.beginPath();
-              ctx.arc(x * CELL_SIZE + CELL_SIZE/2, y * CELL_SIZE + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
+              ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
               ctx.fill();
             } else if (board[y][x] === 9) {
+              // 宝箱
               ctx.fillStyle = "gold";
               ctx.beginPath();
-              ctx.arc(x * CELL_SIZE + CELL_SIZE/2, y * CELL_SIZE + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
+              ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
               ctx.fill();
             } else {
+              // 数字と宝箱ヒント
               ctx.fillStyle = "#333";
               ctx.font = "20px Roboto";
-              ctx.fillText(board[y][x], x * CELL_SIZE + 15, y * CELL_SIZE + 25);
+              ctx.fillText(board[y][x], cellX + 10, cellY + 25);
               let hint = getTreasureHint(x, y);
               if (hint) {
-                ctx.fillText(hint, x * CELL_SIZE + 30, y * CELL_SIZE + 30);
+                ctx.fillText(hint, cellX + 25, cellY + 35);
               }
             }
           }
@@ -228,8 +248,9 @@
 
     function handleClick(event) {
       let rect = canvas.getBoundingClientRect();
-      let x = Math.floor((event.clientX - rect.left) / CELL_SIZE);
-      let y = Math.floor((event.clientY - rect.top) / CELL_SIZE);
+      let x = Math.floor((event.clientX - rect.left - MARGIN) / CELL_SIZE);
+      let y = Math.floor((event.clientY - rect.top - MARGIN) / CELL_SIZE);
+      if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return; // 地雷原外のクリックは無視
       revealCell(x, y);
     }
 
