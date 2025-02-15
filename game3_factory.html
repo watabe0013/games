@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>超効率エンジニア</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    button {
+      margin: 2px;
+      padding: 5px 10px;
+    }
+    #gameMessage {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #007700;
+    }
+  </style>
+</head>
+<body>
+  <h1>超効率エンジニア</h1>
+  <div id="gameInfo">
+    <p>ターン: <span id="turn">1</span> / 10</p>
+    <p>総利益: <span id="totalProfit">0</span></p>
+    <p>今ターンの利益: <span id="turnProfit">0</span></p>
+  </div>
+  
+  <table id="machineTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>生産力</th>
+        <th>メンテナンス費用</th>
+        <th>エネルギー費用</th>
+        <th>今ターン利益</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 各機械の情報がここに挿入されます -->
+    </tbody>
+  </table>
+  
+  <button id="endTurnBtn">ターン終了</button>
+  <div id="gameMessage"></div>
+  
+  <script>
+    let currentTurn = 1;
+    let totalProfit = 0;
+    let machines = [];
+    let machineIdCounter = 1;
+    
+    // 機械オブジェクトを生成（生産力：10～50、メンテナンス：5～20、エネルギー：5～20）
+    function createMachine() {
+      return {
+        id: machineIdCounter++,
+        production: Math.floor(Math.random() * 41) + 10,
+        maintenance: Math.floor(Math.random() * 16) + 5,
+        energy: Math.floor(Math.random() * 16) + 5
+      };
+    }
+    
+    // ゲーム開始時に初期生産ラインを生成（例として5台の機械を作成）
+    function initGame() {
+      for (let i = 0; i < 5; i++) {
+        machines.push(createMachine());
+      }
+      updateUI();
+    }
+    
+    // UIを更新する関数
+    function updateUI() {
+      document.getElementById('turn').textContent = currentTurn;
+      document.getElementById('totalProfit').textContent = totalProfit;
+      
+      const tbody = document.getElementById('machineTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      
+      machines.forEach(machine => {
+        const row = document.createElement('tr');
+        // 各機械の今ターン利益を計算
+        const machineProfit = machine.production - (machine.maintenance + machine.energy);
+        
+        row.innerHTML = `
+          <td>${machine.id}</td>
+          <td>${machine.production}</td>
+          <td>${machine.maintenance}</td>
+          <td>${machine.energy}</td>
+          <td>${machineProfit}</td>
+          <td>
+            <button onclick="upgradeParts(${machine.id})">部品交換</button>
+            <button onclick="installEnergySaver(${machine.id})">省エネ装置</button>
+            <button onclick="deleteMachine(${machine.id})">削除</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    
+    // ターン終了時に全機械の収支を計算し、総利益を更新
+    function endTurn() {
+      let turnProfit = 0;
+      machines.forEach(machine => {
+        turnProfit += machine.production - (machine.maintenance + machine.energy);
+      });
+      
+      totalProfit += turnProfit;
+      document.getElementById('turnProfit').textContent = turnProfit;
+      
+      if (currentTurn >= 10) {
+        document.getElementById('gameMessage').innerHTML = `<h2>ゲーム終了！ 最終スコア: ${totalProfit}</h2>`;
+        document.getElementById('endTurnBtn').disabled = true;
+        disableActionButtons();
+      } else {
+        currentTurn++;
+        updateUI();
+      }
+    }
+    
+    // ゲーム終了時にすべてのボタンを無効化
+    function disableActionButtons() {
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => {
+        button.disabled = true;
+      });
+    }
+    
+    // 部品交換：生産力を20%向上
+    function upgradeParts(machineId) {
+      const machine = machines.find(m => m.id === machineId);
+      if (machine) {
+        machine.production = Math.round(machine.production * 1.2);
+        updateUI();
+      }
+    }
+    
+    // 省エネ装置：エネルギー費用を20%削減（最低値は1）
+    function installEnergySaver(machineId) {
+      const machine = machines.find(m => m.id === machineId);
+      if (machine) {
+        machine.energy = Math.max(1, Math.round(machine.energy * 0.8));
+        updateUI();
+      }
+    }
+    
+    // 機械の削除
+    function deleteMachine(machineId) {
+      machines = machines.filter(m => m.id !== machineId);
+      updateUI();
+    }
+    
+    document.getElementById('endTurnBtn').addEventListener('click', endTurn);
+    window.onload = initGame;
+  </script>
+</body>
+</html>
