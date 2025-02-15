@@ -2,111 +2,98 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ブラウザゲーム制作プロジェクト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ブラウザゲームコレクション</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
   <style>
+    /* ベースのスタイル */
     body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background-color: #ffeb3b;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #333;
     }
     header {
       text-align: center;
-      padding: 20px;
-      background-color: #fbc02d;
-      border-radius: 8px;
+      margin-top: 40px;
       color: #fff;
     }
-    nav {
-      text-align: center;
+    header h1 {
+      font-size: 3em;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+    header p {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+    .game-container {
+      background: rgba(255, 255, 255, 0.95);
+      width: 90%;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .game-container h2 {
+      margin-top: 0;
+      font-size: 2em;
+      color: #444;
+    }
+    .game-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .game-list li {
       margin: 20px 0;
+      display: flex;
+      justify-content: center;
     }
-    nav a {
-      margin: 0 15px;
+    .game-button {
       text-decoration: none;
-      font-size: 20px;
-      color: #d32f2f;
-      padding: 10px 20px;
-      background-color: #fff;
-      border: 2px solid #d32f2f;
-      border-radius: 8px;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    nav a:hover {
-      background-color: #d32f2f;
+      background: linear-gradient(45deg, #FF6B6B, #FFD93D);
       color: #fff;
+      padding: 15px 25px;
+      border-radius: 30px;
+      font-size: 1.2em;
+      transition: background 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    section {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #fbc02d;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #fff9c4;
-      font-size: 18px;
-    }
-    td {
-      font-size: 16px;
+    .game-button:hover {
+      background: linear-gradient(45deg, #FFD93D, #FF6B6B);
     }
     footer {
+      margin-top: auto;
+      padding: 20px;
       text-align: center;
-      font-size: 16px;
-      color: #d32f2f;
-      margin-top: 20px;
+      color: #fff;
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>ブラウザゲーム制作プロジェクト</h1>
-    <p>言葉と冒険のポップな世界へようこそ！</p>
+    <h1>ブラウザゲームコレクション</h1>
+    <p>遊び心をくすぐるオリジナルゲームがここに</p>
   </header>
-  <nav>
-    <a href="game1_mine.html">トレジャーマインス</a>
-    <a href="game2_tantei.html">クロスワード探偵</a>
-  </nav>
-  <section>
+  
+  <div class="game-container">
     <h2>ゲーム一覧</h2>
-    <p>下記のゲームからお好きなものを選んで、楽しい冒険を始めましょう！</p>
-    <table>
-      <tr>
-        <th>ゲーム番号</th>
-        <th>ゲーム名</th>
-        <th>概要</th>
-        <th>リンク</th>
-      </tr>
-      <tr>
-        <td>ゲーム1</td>
-        <td>トレジャーマインス</td>
-        <td>
-          カラフルな鉱山の中から隠された宝物を探し出す、アクションパズルゲームです。
-        </td>
-        <td><a href="game1_mine.html">プレイする</a></td>
-      </tr>
-      <tr>
-        <td>ゲーム2</td>
-        <td>クロスワード探偵</td>
-        <td>
-          探偵となってクロスワードパズルで事件の手がかりを解読し、真相に迫るミステリーゲームです。
-        </td>
-        <td><a href="game2_tantei.html">プレイする</a></td>
-      </tr>
-    </table>
-  </section>
+    <ul class="game-list">
+      <li><a href="game1_mine.html" class="game-button">トレジャーマインス</a></li>
+      <li><a href="#" class="game-button" onclick="alert('開発中です！')">ゲーム2（開発中）</a></li>
+      <li><a href="game3_factory.html" class="game-button">超効率エンジニア</a></li>
+    </ul>
+  </div>
+  
   <footer>
-    <p>&copy; 2025 ブラウザゲーム制作プロジェクト</p>
+    © 2025 ブラウザゲーム制作プロジェクト. All rights reserved.
   </footer>
 </body>
 </html>
