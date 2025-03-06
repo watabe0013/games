@@ -1,161 +1,268 @@
-import pygame
-import random
-import sys
-
-# --- 定数 ---
-GRID_SIZE = 10         # グリッドの行数・列数
-CELL_SIZE = 40         # セルの1辺のピクセル数
-MARGIN = 20            # グリッドを描画する余白
-NUM_MINES = 10         # 地雷の数
-NUM_TREASURES = 5      # 宝箱の数
-
-# ウィンドウサイズ（余白分含む）
-WINDOW_WIDTH = GRID_SIZE * CELL_SIZE + 2 * MARGIN  # 10*40 + 40 = 440
-WINDOW_HEIGHT = WINDOW_WIDTH
-
-# 色定義
-LIGHT_GRAY = (211, 211, 211)  # 未オープンセル
-WHITE = (255, 255, 255)       # オープンセル
-YELLOW_GREEN = (173, 255, 47) # 地雷原外の背景
-GRAY_BORDER = (153, 153, 153) # セルの枠色
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-# --- Pygame 初期化 ---
-pygame.init()
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("トレジャーマインス")
-clock = pygame.time.Clock()
-
-# フォント
-font = pygame.font.SysFont("Arial", 20)
-
-# 宝箱画像の読み込み（takarabako.png は同一ディレクトリに配置）
-try:
-    treasure_img = pygame.image.load("takarabako.png").convert_alpha()
-    treasure_img = pygame.transform.smoothscale(treasure_img, (CELL_SIZE, CELL_SIZE))
-except pygame.error:
-    print("宝箱画像（takarabako.png）の読み込みに失敗しました。")
-    sys.exit()
-
-# --- ゲームデータ ---
-# 盤面（値：0=初期、-1=地雷、9=宝箱、数字=周囲の地雷数）
-board = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-# セルの表示状態（True: 表示済み、False: 未表示）
-revealed = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-treasure_found = 0
-game_over = False
-game_clear = False
-
-def place_objects(num, obj_type):
-    count = 0
-    while count < num:
-        x = random.randint(0, GRID_SIZE - 1)
-        y = random.randint(0, GRID_SIZE - 1)
-        if board[y][x] == 0:
-            board[y][x] = obj_type
-            count += 1
-
-# --- 地雷と宝箱の配置 ---
-place_objects(NUM_MINES, -1)      # 地雷は -1
-place_objects(NUM_TREASURES, 9)     # 宝箱は 9
-
-# --- 周囲の地雷数の計算 ---
-def calculate_numbers():
-    for y in range(GRID_SIZE):
-        for x in range(GRID_SIZE):
-            # 既に地雷または宝箱ならスキップ
-            if board[y][x] in (-1, 9):
-                continue
-            count = 0
-            for dy in range(-1, 2):
-                for dx in range(-1, 2):
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < GRID_SIZE and 0 <= ny < GRID_SIZE:
-                        if board[ny][nx] == -1:
-                            count += 1
-            board[y][x] = count
-
-calculate_numbers()
-
-# --- 描画 ---
-def draw_board():
-    # 背景を黄緑で塗りつぶす（地雷原外）
-    screen.fill(YELLOW_GREEN)
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>トレジャーマインス - ゲームページ</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <style>
+    /* 全体のスタイル */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      color: #333;
+    }
+    /* ヘッダ：全幅表示、高さ75px */
+    header {
+      width: 100%;
+      margin-top: 40px;
+      height: 75px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 3em;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+    header p {
+      font-size: 1.2em;
+      margin-top: 5px;
+    }
+    /* モバイル向け：フォントサイズ調整 */
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 2em;
+      }
+      header p {
+        font-size: 1em;
+      }
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      width: 90%;
+      max-width: 700px;
+      margin: 20px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .game-description {
+      text-align: left;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .game-description h2 {
+      margin-top: 0;
+      color: #444;
+    }
+    /* キャンバス：レスポンシブ対応（固定内部サイズは 440×440） */
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: #ADFF2F;
+      width: 100%;
+      max-width: 440px;
+      height: auto;
+    }
+    #message {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(45deg, #FF6B6B, #FFD93D);
+      border: none;
+      border-radius: 30px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #FFD93D, #FF6B6B);
+    }
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>トレジャーマインス</h1>
+    <p>宝探しマインスイーパー</p>
+  </header>
+  
+  <div class="container">
+    <div class="game-description">
+      <h2>ゲーム説明</h2>
+      <p>
+        トレジャーマインスは、クラシックなマインスイーパーに宝探し要素を加えたアレンジゲームです。グリッド上に隠された地雷と宝箱を配置し、クリックしてセルを開いていきます。開いたセルには周囲の地雷の数が表示され、宝箱セルは画像「takarabako.png」で可視化されます。地雷を踏むとゲームオーバーとなるので注意！ 全ての宝箱を見つけ出し、勝利を目指しましょう。
+      </p>
+    </div>
     
-    # 地雷原の枠（グリッド部分）を描画
-    grid_rect = pygame.Rect(MARGIN, MARGIN, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE)
-    pygame.draw.rect(screen, BLACK, grid_rect, 2)
-    
-    # 各セルを描画
-    for y in range(GRID_SIZE):
-        for x in range(GRID_SIZE):
-            cell_x = MARGIN + x * CELL_SIZE
-            cell_y = MARGIN + y * CELL_SIZE
-            # 未オープン: 薄い灰色, オープン: 白
-            color = WHITE if revealed[y][x] else LIGHT_GRAY
-            cell_rect = pygame.Rect(cell_x, cell_y, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(screen, color, cell_rect)
-            # セルの枠
-            pygame.draw.rect(screen, GRAY_BORDER, cell_rect, 1)
-            
-            # セルが開かれている場合、内容を描画
-            if revealed[y][x]:
-                if board[y][x] == -1:
-                    # 地雷なら赤い円を描く
-                    pygame.draw.circle(screen, RED, (cell_x + CELL_SIZE // 2, cell_y + CELL_SIZE // 2), CELL_SIZE // 4)
-                elif board[y][x] == 9:
-                    # 宝箱なら画像を描画
-                    screen.blit(treasure_img, (cell_x, cell_y))
-                elif board[y][x] > 0:
-                    # 数字を描画（0の場合は何も描かない）
-                    text = font.render(str(board[y][x]), True, BLACK)
-                    screen.blit(text, (cell_x + 10, cell_y + 10))
+    <!-- 固定内部サイズ 440×440 のキャンバス。CSSでレスポンシブに縮小 -->
+    <canvas id="gameCanvas" width="440" height="440"></canvas>
+    <p id="message">宝箱を見つけよう！</p>
+    <div style="text-align: center;">
+      <a href="index.html" class="btn">メインページへ戻る</a>
+    </div>
+  </div>
+  
+  <footer>
+    © 2025 ブラウザゲーム制作プロジェクト. All rights reserved.
+  </footer>
+  
+  <script>
+    const GRID_SIZE = 10;
+    const CELL_SIZE = 40;
+    const NUM_MINES = 10;
+    const NUM_TREASURES = 5;
+    const MARGIN = 20; // キャンバス内の地雷原の余白
 
-# --- セルを開く ---
-def reveal_cell(x, y):
-    global treasure_found, game_over, game_clear
-    if revealed[y][x]:
-        return
-    revealed[y][x] = True
-    if board[y][x] == -1:
-        game_over = True
-    elif board[y][x] == 9:
-        treasure_found += 1
-        if treasure_found == NUM_TREASURES:
-            game_clear = True
+    // 宝箱画像を読み込み
+    const treasureImg = new Image();
+    treasureImg.src = "takarabako.png";
 
-# --- メインループ ---
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not (game_over or game_clear):
-            mx, my = pygame.mouse.get_pos()
-            # マージンを考慮してグリッド内のセル座標を算出
-            if MARGIN <= mx < MARGIN + GRID_SIZE * CELL_SIZE and MARGIN <= my < MARGIN + GRID_SIZE * CELL_SIZE:
-                cell_x = (mx - MARGIN) // CELL_SIZE
-                cell_y = (my - MARGIN) // CELL_SIZE
-                reveal_cell(cell_x, cell_y)
-    
-    draw_board()
-    
-    # ゲーム終了メッセージ表示
-    if game_over or game_clear:
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-        overlay.set_alpha(180)
-        overlay.fill((0, 0, 0))
-        screen.blit(overlay, (0, 0))
-        if game_over:
-            msg = "ゲームオーバー！"
-        else:
-            msg = "全ての宝箱を見つけた！ゲームクリア！"
-        text = font.render(msg, True, WHITE)
-        text_rect = text.get_rect(center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2))
-        screen.blit(text, text_rect)
-    
-    pygame.display.flip()
-    clock.tick(30)
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const message = document.getElementById("message");
 
-pygame.quit()
+    let board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+    let revealed = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+    let treasureFound = 0;
+
+    function placeObjects(num, type) {
+      let count = 0;
+      while (count < num) {
+        let x = Math.floor(Math.random() * GRID_SIZE);
+        let y = Math.floor(Math.random() * GRID_SIZE);
+        if (board[y][x] === 0) {
+          board[y][x] = type;
+          count++;
+        }
+      }
+    }
+
+    function calculateNumbers() {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          if (board[y][x] === -1) continue;
+          let count = 0;
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              let nx = x + dx, ny = y + dy;
+              if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && board[ny][nx] === -1) {
+                count++;
+              }
+            }
+          }
+          if (board[y][x] !== 9) board[y][x] = count;
+        }
+      }
+    }
+
+    function drawBoard() {
+      // キャンバス全体を黄緑で塗りつぶし（地雷原外）
+      ctx.fillStyle = "#ADFF2F";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 地雷原の枠を描画
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(MARGIN, MARGIN, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+      
+      // 各セルの描画
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cellX = MARGIN + x * CELL_SIZE;
+          const cellY = MARGIN + y * CELL_SIZE;
+          
+          // 未オープンのセルは薄い灰色、オープン済みは白
+          ctx.fillStyle = revealed[y][x] ? "#FFFFFF" : "#d3d3d3";
+          ctx.fillRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
+          
+          // セルの枠（薄いグレー）
+          ctx.strokeStyle = "#999";
+          ctx.strokeRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
+          
+          if (revealed[y][x]) {
+            if (board[y][x] === -1) {
+              // 地雷
+              ctx.fillStyle = "red";
+              ctx.beginPath();
+              ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (board[y][x] === 9) {
+              // 宝箱：画像を描画
+              ctx.drawImage(treasureImg, cellX, cellY, CELL_SIZE, CELL_SIZE);
+            } else {
+              // 数字（宝箱への矢印は削除）
+              ctx.fillStyle = "#333";
+              ctx.font = "20px Roboto";
+              ctx.fillText(board[y][x], cellX + 10, cellY + 25);
+            }
+          }
+        }
+      }
+    }
+
+    function revealCell(x, y) {
+      if (revealed[y][x]) return;
+      revealed[y][x] = true;
+      if (board[y][x] === -1) {
+        message.textContent = "ゲームオーバー！";
+        canvas.removeEventListener("click", handleClick);
+      } else if (board[y][x] === 9) {
+        treasureFound++;
+        if (treasureFound === NUM_TREASURES) {
+          message.textContent = "全ての宝箱を見つけた！ゲームクリア！";
+          canvas.removeEventListener("click", handleClick);
+        }
+      }
+      drawBoard();
+    }
+
+    function handleClick(event) {
+      let rect = canvas.getBoundingClientRect();
+      let scaleX = canvas.width / rect.width;
+      let scaleY = canvas.height / rect.height;
+      let canvasX = (event.clientX - rect.left) * scaleX;
+      let canvasY = (event.clientY - rect.top) * scaleY;
+      let x = Math.floor((canvasX - MARGIN) / CELL_SIZE);
+      let y = Math.floor((canvasY - MARGIN) / CELL_SIZE);
+      if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return; // クリックが地雷原外なら無視
+      revealCell(x, y);
+    }
+
+    function initGame() {
+      placeObjects(NUM_MINES, -1);
+      placeObjects(NUM_TREASURES, 9);
+      calculateNumbers();
+      drawBoard();
+      canvas.addEventListener("click", handleClick);
+    }
+
+    initGame();
+  </script>
+</body>
+</html>
