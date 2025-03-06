@@ -3,314 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>トレジャーマインス - ゲームページ</title>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <title>トレジャーマインス</title>
   <style>
-    /* 全体のスタイル */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      align-items: center;
-      color: #333;
-      position: relative;
-    }
-    /* 右上のスコア表示 */
-    #score {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #fff;
-      background: rgba(0,0,0,0.3);
-      padding: 5px 10px;
-      border-radius: 5px;
-      z-index: 100;
-    }
-    /* ヘッダ：全幅表示、高さ75px */
-    header {
-      width: 100%;
-      margin-top: 40px;
-      height: 75px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-      text-align: center;
-    }
-    header h1 {
-      font-size: 3em;
-      margin: 0;
-      letter-spacing: 2px;
-    }
-    header p {
-      font-size: 1.2em;
-      margin-top: 5px;
-    }
-    @media (max-width: 480px) {
-      header h1 {
-        font-size: 2em;
-      }
-      header p {
-        font-size: 1em;
-      }
-    }
-    .container {
-      background: rgba(255, 255, 255, 0.95);
-      width: 90%;
-      max-width: 700px;
-      margin: 20px;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-    .game-description {
-      text-align: left;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-    .game-description h2 {
-      margin-top: 0;
-      color: #444;
-    }
-    /* キャンバス：レスポンシブ対応（内部サイズは 440×440） */
-    #gameCanvas {
-      display: block;
-      margin: 0 auto;
-      background: #ADFF2F;
-      width: 100%;
-      max-width: 440px;
-      height: auto;
-    }
-    #message {
-      text-align: center;
-      font-size: 18px;
-      margin-top: 10px;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #fff;
-      background: linear-gradient(45deg, #FF6B6B, #FFD93D);
-      border: none;
-      border-radius: 30px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .btn:hover {
-      background: linear-gradient(45deg, #FFD93D, #FF6B6B);
-    }
-    footer {
-      margin-top: auto;
-      padding: 20px;
-      text-align: center;
-      color: #fff;
-      font-size: 0.9em;
-    }
+    body {text-align:center;font-family:sans-serif;background:#ACB6E5;margin:0;padding:0;}
+    #score {position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.3);color:#fff;padding:8px;border-radius:5px;}
+    canvas {background:#ADFF2F;max-width:440px;width:100%;margin:20px auto;display:block;}
   </style>
 </head>
 <body>
   <div id="score">Score: 0</div>
-  <header>
-    <h1>トレジャーマインス</h1>
-    <p>宝探しマインスイーパー</p>
-  </header>
-  
-  <div class="container">
-    <div class="game-description">
-      <h2>ゲーム説明</h2>
-      <p>
-        トレジャーマインスは、クラシックなマインスイーパーに宝探し要素を加えたゲームです。グリッド上に隠された地雷と宝箱を配置しますが、宝箱セルは常に宝箱が見える状態になっています。プレイヤーは安全なセルをクリックして進む中、宝箱をクリックすると 1000 点ずつ加算され、右上に現在のスコアが表示されます。地雷を踏むとゲームオーバーとなるので注意してください！
-      </p>
-    </div>
-    
-    <!-- 固定内部サイズ 440×440 のキャンバス。レスポンシブに縮小 -->
-    <canvas id="gameCanvas" width="440" height="440"></canvas>
-    <p id="message">セルをクリックしてゲーム開始</p>
-    <div style="text-align: center;">
-      <a href="index.html" class="btn">メインページへ戻る</a>
-    </div>
-  </div>
-  
-  <footer>
-    © 2025 ブラウザゲーム制作プロジェクト. All rights reserved.
-  </footer>
-  
+  <canvas id="game"></canvas>
   <script>
-    const GRID_SIZE = 10;
-    const CELL_SIZE = 40;
-    const NUM_MINES = 10;
-    const NUM_TREASURES = 5;
-    const MARGIN = 20; // キャンバス内の地雷原の余白
-    const TREASURE_SCORE = 1000;  // 宝箱1個あたりの点数
+  const SIZE = 10, CELL=40, MINES=10, TREASURES=5;
+  let canvas=document.querySelector('canvas'), ctx=canvas.getContext('2d');
+  canvas.width=440; canvas.height=440;
+  let board=[], revealed=[], score=0, treasureImg=new Image();
+  treasureImg.src="takarabako.png";
 
-    let score = 0;
-    const scoreDiv = document.getElementById("score");
-    
-    // 宝箱画像を読み込み
-    const treasureImg = new Image();
-    treasureImg.src = "takarabako.png";
-    
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const message = document.getElementById("message");
+  // 初期化
+  for(let y=0;y<10;y++){
+    board[y]=[]; revealed[y]=[];
+    for(let x=0;x<10;x++){board[y][x]=0;revealed[y][x]=false;}
+  }
 
-    // 盤面： 0=空、-1=地雷、9=宝箱
-    let board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
-    // セルの状態： true=クリック済み、false=未クリック（ただし宝箱セルは常に宝箱画像表示）
-    let revealed = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
-    // 宝箱が既に収集済みかどうかを示すフラグ（再クリック防止用）
-    let treasureCollected = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
-    
-    let game_over = false;
-    
-    // 地雷、宝箱の配置
-    function placeObjects(num, type) {
-      let count = 0;
-      while (count < num) {
-        let x = Math.floor(Math.random() * GRID_SIZE);
-        let y = Math.floor(Math.random() * GRID_SIZE);
-        // 宝箱と地雷が重ならないように（また、同じ場所に複数は置かない）
-        if (board[y][x] === 0) {
-          board[y][x] = type;
-          count++;
+  function place(type,num){
+    let cnt=0;
+    while(count<num){
+      let x=Math.floor(Math.random()*10),y=Math.floor(Math.random()*10);
+      if(board[y][x]==null){board[y][x]=type;count++;}
+    }
+  }
+  placeObjects(10,-1); placeObjects(5,9);
+
+  function calcNums(){
+    for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+      if(board[y][x]==-1||board[y][x]==9)continue;
+      let c=0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        let nx=x+dx,ny=y+dy;
+        if(nx>=0&&nx<10&&ny>=0&&ny<10&&board[ny][nx]==-1)c++;
+      }
+      board[y][x]=c;
+    }
+  }
+  calcNums();
+
+  function draw(){
+    ctx.fillStyle="#ADFF2F"; ctx.fillRect(0,0,440,440);
+    ctx.strokeStyle="#333"; ctx.strokeRect(20,20,400,400);
+    for(let y=0;y<10;y++)for(let x=0;x<10;x++){
+      let X=20+x*40,Y=20+y*40;
+      ctx.fillStyle=revealed[y][x]?"#fff":"#d3d3d3";
+      ctx.fillRect(X,Y,40,40);
+      ctx.strokeRect(X,Y,40,40);
+
+      // 宝箱を常時表示
+      if(board[y][x]==9)ctx.drawImage(treasureImg,X,Y,40,40);
+      else if(revealed[y][x]){
+        if(board[y][x]==-1){
+          ctx.fillStyle="red"; ctx.beginPath(); ctx.arc(X+20,Y+20,10,0,Math.PI*2); ctx.fill();
+        }else{
+          ctx.fillStyle="#333";
+          ctx.font="20px Arial";
+          ctx.fillText(board[y][x],X+12,Y+26);
         }
       }
     }
-    placeObjects(NUM_MINES, -1);
-    placeObjects(NUM_TREASURES, 9);
+  }
+  
+  canvas.onclick=e=>{
+    let rect=canvas.getBoundingClientRect();
+    let x=Math.floor((e.clientX-rect.left)/rect.width*440);
+    let y=Math.floor((e.clientY-rect.top)/rect.height*440);
+    let gx=Math.floor((x-20)/40), gy=Math.floor((y-20)/40);
+    if(gx<0||gx>=10||gy<0||gy>=10||revealed[gy][gx])return;
     
-    // 周囲の地雷数を計算（宝箱セルはそのまま）
-    function calculateNumbers() {
-      for (let y = 0; y < GRID_SIZE; y++) {
-        for (let x = 0; x < GRID_SIZE; x++) {
-          if (board[y][x] === -1 || board[y][x] === 9) continue;
-          let count = 0;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              let nx = x + dx, ny = y + dy;
-              if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && board[ny][nx] === -1) {
-                count++;
-              }
-            }
-          }
-          board[y][x] = count;
-        }
+    revealed[gy][gx]=true;
+    if(board[gy][gx]==-1){
+      alert("ゲームオーバー！");
+      canvas.onclick=null;
+    }else if(board[gy][gx]==9){
+      score+=1000;
+      document.getElementById("score").innerText=`Score: ${score}`;
+      let found=0;
+      for(let row of revealed)for(let cell of row)if(cell&&board[gy][gx]==9)found++;
+      if(score==5000){
+        alert("ゲームクリア！ Score:"+score);
+        canvas.onclick=null;
       }
     }
-    calculateNumbers();
-    
-    // スコア表示の更新
-    function updateScore() {
-      scoreDiv.textContent = "Score: " + score;
-    }
-    
-    // 盤面の描画
-    function drawBoard() {
-      // キャンバス全体を黄緑で塗りつぶし（地雷原外）
-      ctx.fillStyle = "#ADFF2F";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 地雷原の枠を描画
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(MARGIN, MARGIN, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
-      
-      // 各セルの描画
-      for (let y = 0; y < GRID_SIZE; y++) {
-        for (let x = 0; x < GRID_SIZE; x++) {
-          const cellX = MARGIN + x * CELL_SIZE;
-          const cellY = MARGIN + y * CELL_SIZE;
-          
-          // 宝箱セルは常に宝箱画像を描画
-          if (board[y][x] === 9) {
-            ctx.drawImage(treasureImg, cellX, cellY, CELL_SIZE, CELL_SIZE);
-          } else {
-            // 未クリックなら薄い灰色、クリック済みなら白
-            ctx.fillStyle = revealed[y][x] ? "#FFFFFF" : "#d3d3d3";
-            ctx.fillRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
-          }
-          
-          // セルの枠
-          ctx.strokeStyle = "#999";
-          ctx.strokeRect(cellX, cellY, CELL_SIZE, CELL_SIZE);
-          
-          if (revealed[y][x] && board[y][x] !== 9) {
-            if (board[y][x] === -1) {
-              // 地雷の場合
-              ctx.fillStyle = "red";
-              ctx.beginPath();
-              ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
-              ctx.fill();
-            } else if (board[y][x] > 0) {
-              // 数字の場合
-              ctx.fillStyle = "#333";
-              ctx.font = "20px Roboto";
-              ctx.fillText(board[y][x], cellX + 10, cellY + 25);
-            }
-          }
-        }
-      }
-    }
-    
-    // セルをクリックしたときの処理
-    function revealCell(x, y) {
-      if (game_over) return;
-      // すでにクリック済みなら何もしない
-      if (revealed[y][x]) return;
-      
-      // 地雷の場合はゲームオーバー
-      if (board[y][x] === -1) {
-        revealed[y][x] = true;
-        game_over = true;
-        message.textContent = "ゲームオーバー！";
-        return;
-      }
-      
-      // 宝箱の場合：まだ収集していなければ得点を加算
-      if (board[y][x] === 9) {
-        if (!treasureCollected[y][x]) {
-          treasureCollected[y][x] = true;
-          score += TREASURE_SCORE;
-          updateScore();
-        }
-      }
-      
-      // クリック済みとしてマーク
-      revealed[y][x] = true;
-    }
-    
-    // クリックイベントの処理（レスポンシブ対応）
-    function handleClick(event) {
-      let rect = canvas.getBoundingClientRect();
-      let scaleX = canvas.width / rect.width;
-      let scaleY = canvas.height / rect.height;
-      let canvasX = (event.clientX - rect.left) * scaleX;
-      let canvasY = (event.clientY - rect.top) * scaleY;
-      let x = Math.floor((canvasX - MARGIN) / CELL_SIZE);
-      let y = Math.floor((canvasY - MARGIN) / CELL_SIZE);
-      if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
-      revealCell(x, y);
-      drawBoard();
-    }
-    
-    // 初期描画
-    function initGame() {
-      updateScore();
-      drawBoard();
-      canvas.addEventListener("click", handleClick);
-    }
-    initGame();
-  </script>
+    draw();
+  };
+  
+  treasureImg.onload=draw;
+</script>
 </body>
 </html>
