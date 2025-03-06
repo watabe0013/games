@@ -116,7 +116,7 @@
     <div class="game-description">
       <h2>ゲーム説明</h2>
       <p>
-        トレジャーマインスは、クラシックなマインスイーパーに宝探し要素を加えたアレンジゲームです。グリッド上に隠された地雷と宝箱を配置し、クリックしてセルを開いていきます。開いたセルには、周囲にある地雷の数と、最も近い宝箱へのヒント（方向）が表示されます。地雷を踏むとゲームオーバーとなるので注意！ 全ての宝箱を見つけ出し、勝利を目指しましょう。
+        トレジャーマインスは、クラシックなマインスイーパーに宝探し要素を加えたアレンジゲームです。グリッド上に隠された地雷と宝箱を配置し、クリックしてセルを開いていきます。開いたセルには周囲の地雷の数が表示され、宝箱セルは画像「takarabako.png」で可視化されます。地雷を踏むとゲームオーバーとなるので注意！ 全ての宝箱を見つけ出し、勝利を目指しましょう。
       </p>
     </div>
     
@@ -138,6 +138,10 @@
     const NUM_MINES = 10;
     const NUM_TREASURES = 5;
     const MARGIN = 20; // キャンバス内の地雷原の余白
+
+    // 宝箱画像を読み込み
+    const treasureImg = new Image();
+    treasureImg.src = "takarabako.png";
 
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -177,23 +181,6 @@
       }
     }
 
-    function getTreasureHint(x, y) {
-      let minDistance = Infinity;
-      let direction = "";
-      for (let ty = 0; ty < GRID_SIZE; ty++) {
-        for (let tx = 0; tx < GRID_SIZE; tx++) {
-          if (board[ty][tx] === 9) {
-            let distance = Math.abs(tx - x) + Math.abs(ty - y);
-            if (distance < minDistance) {
-              minDistance = distance;
-              direction = tx > x ? "→" : tx < x ? "←" : ty > y ? "↓" : "↑";
-            }
-          }
-        }
-      }
-      return direction;
-    }
-
     function drawBoard() {
       // キャンバス全体を黄緑で塗りつぶし（地雷原外）
       ctx.fillStyle = "#ADFF2F";
@@ -226,20 +213,13 @@
               ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
               ctx.fill();
             } else if (board[y][x] === 9) {
-              // 宝箱
-              ctx.fillStyle = "gold";
-              ctx.beginPath();
-              ctx.arc(cellX + CELL_SIZE/2, cellY + CELL_SIZE/2, CELL_SIZE/4, 0, Math.PI * 2);
-              ctx.fill();
+              // 宝箱：画像を描画
+              ctx.drawImage(treasureImg, cellX, cellY, CELL_SIZE, CELL_SIZE);
             } else {
-              // 数字と宝箱ヒント
+              // 数字（宝箱への矢印は削除）
               ctx.fillStyle = "#333";
               ctx.font = "20px Roboto";
               ctx.fillText(board[y][x], cellX + 10, cellY + 25);
-              let hint = getTreasureHint(x, y);
-              if (hint) {
-                ctx.fillText(hint, cellX + 25, cellY + 35);
-              }
             }
           }
         }
